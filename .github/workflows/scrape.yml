@@ -5,6 +5,9 @@ on:
     - cron: "0 2,14 * * *"
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 permissions:
   contents: write
 
@@ -31,12 +34,25 @@ jobs:
         run: |
           python -m playwright install --with-deps
 
+      - name: Debug runner info
+        run: |
+          echo "=== Runner info ==="
+          uname -a || true
+          lsb_release -a || true
+          echo "=== Python & Pip ==="
+          python -V || true
+          pip -V || true
+          pip list --format=columns || true
+          echo "=== Playwright (python) ==="
+          python -c "import importlib; m=importlib.util.find_spec('playwright'); print('found', bool(m))" || true
+
       - name: Run scraper
         env:
           MAX_MAKES: "15"
           YEAR_COUNT: "3"
         run: |
-          python scraper.py
+          set -e
+          python scraper.py 2>&1 | tee workflow.log
 
       - name: Commit outputs if changed
         run: |
@@ -48,3 +64,12 @@ jobs:
 
           git commit -m "Update car dataset"
           git push
+
+      - name: Upload logs and outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-artifacts
+          path: |
+            workflow.log
+            output/cars.csv
+            output/cars.xlsx
