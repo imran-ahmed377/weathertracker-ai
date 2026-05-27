@@ -5,6 +5,10 @@ on:
     - cron: "0 2 * * *"
   workflow_dispatch:
 
+concurrency:
+  group: weather-dashboard-pipeline
+  cancel-in-progress: true
+
 permissions:
   contents: write
   pages: write
@@ -17,6 +21,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -36,16 +42,34 @@ jobs:
           set -e
           python weather_dashboard.py 2>&1 | tee workflow.log
 
-      - name: Commit generated files if changed
+      - name: Publish generated files to bot branch
+        env:
+          BOT_BRANCH: bot/weather-data
         run: |
+          set -e
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
 
-          git add output/weather_daily.csv output/weather_observations.csv docs/index.html docs/charts docs/.nojekyll
+          if git ls-remote --exit-code --heads origin "$BOT_BRANCH"; then
+            git fetch origin "$BOT_BRANCH"
+            git worktree add -B "$BOT_BRANCH" ../bot-worktree "origin/$BOT_BRANCH"
+          else
+            git worktree add -b "$BOT_BRANCH" ../bot-worktree
+          fi
+
+          find ../bot-worktree -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          mkdir -p ../bot-worktree/output ../bot-worktree/docs
+
+          rsync -a --delete output/ ../bot-worktree/output/
+          rsync -a --delete docs/ ../bot-worktree/docs/
+
+          pushd ../bot-worktree
+          git add -A
           git diff --staged --quiet && echo "No data changes to commit." && exit 0
 
           git commit -m "Update weather dashboard data"
-          git push
+          git push origin "$BOT_BRANCH"
+          popd
 
       - name: Upload logs and outputs
         uses: actions/upload-artifact@v4
