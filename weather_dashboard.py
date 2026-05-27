@@ -122,11 +122,15 @@ def write_csv(path: Path, df: pd.DataFrame) -> None:
 
 
 def append_observations(observation_df: pd.DataFrame) -> pd.DataFrame:
+    allowed_cities = {city.name for city in CITIES}
+
     if OBSERVATIONS_CSV.exists():
         existing = pd.read_csv(OBSERVATIONS_CSV)
         combined = pd.concat([existing, observation_df], ignore_index=True)
     else:
         combined = observation_df.copy()
+
+    combined = combined[combined["city"].isin(allowed_cities)]
 
     combined = combined.drop_duplicates(
         subset=["scraped_at_utc", "city"], keep="last")
@@ -351,7 +355,11 @@ def run() -> int:
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     DOCS_DIR.mkdir(parents=True, exist_ok=True)
+    CHARTS_DIR.mkdir(parents=True, exist_ok=True)
     (DOCS_DIR / ".nojekyll").write_text("", encoding="utf-8")
+
+    for chart_file in CHARTS_DIR.glob("*-trend.png"):
+        chart_file.unlink(missing_ok=True)
 
     run_ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     session = build_session()
