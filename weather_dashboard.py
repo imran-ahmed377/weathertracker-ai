@@ -3,7 +3,7 @@ from __future__ import annotations
 import html
 import os
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +14,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 FORECAST_API = "https://api.open-meteo.com/v1/forecast"
+HISTORICAL_API = "https://archive-api.open-meteo.com/v1/archive"
 OUTPUT_DIR = Path("output")
 DOCS_DIR = Path("docs")
 CHARTS_DIR = DOCS_DIR / "charts"
@@ -23,6 +24,7 @@ DASHBOARD_HTML = DOCS_DIR / "index.html"
 
 DEFAULT_PAST_DAYS = 30
 DEFAULT_FORECAST_DAYS = 7
+TREND_WINDOW_DAYS = 365
 
 
 @dataclass(frozen=True)
@@ -101,6 +103,45 @@ def fetch_city_weather(
     daily_df["date"] = pd.to_datetime(daily_df["date"], errors="coerce")
     daily_df = daily_df.dropna(subset=["date"])
     return daily_df, current
+
+
+def fetch_city_climate_trend(
+    session: requests.Session,
+    city: City,
+    start_date: str,
+    end_date: str,
+) -> pd.DataFrame:
+    params: dict[str, Any] = {
+        "latitude": city.latitude,
+        "longitude": city.longitude,
+        "timezone": city.timezone,
+        "start_date": start_date,
+        "end_date": end_date,
+        "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max",
+    }
+    response = session.get(HISTORICAL_API, params=params, timeout=30)
+    response.raise_for_status()
+
+    payload = response.json()
+    daily = payload.get("daily")
+    if not isinstance(daily, dict):
+        raise ValueError(
+            f"Unexpected Open-Meteo historical payload for {city.name}")
+
+    daily_df = pd.DataFrame(
+        {
+            "date": daily.get("time", []),
+            "temp_max_c": daily.get("temperature_2m_max", []),
+            "temp_min_c": daily.get("temperature_2m_min", []),
+            "precip_mm": daily.get("precipitation_sum", []),
+            "wind_max_kmh": daily.get("wind_speed_10m_max", []),
+        }
+    )
+    daily_df["city"] = city.name
+    daily_df["timezone"] = city.timezone
+    daily_df["date"] = pd.to_datetime(daily_df["date"], errors="coerce")
+    daily_df = daily_df.dropna(subset=["date"])
+    return daily_df
 
 
 def build_observation_row(city: City, current: dict[str, Any], run_ts: str) -> dict[str, Any]:
@@ -362,6 +403,8 @@ def run() -> int:
         chart_file.unlink(missing_ok=True)
 
     run_ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    trend_end_date = (datetime.now(timezone.utc).date() - timedelta(days=1))
+    trend_start_date = trend_end_date - timedelta(days=TREND_WINDOW_DAYS - 1)
     session = build_session()
 
     daily_frames: list[pd.DataFrame] = []
@@ -373,7 +416,13 @@ def run() -> int:
             session, city, past_days=past_days, forecast_days=forecast_days)
         daily_frames.append(daily_df)
         observation_rows.append(build_observation_row(city, current, run_ts))
-        chart_paths[city.name] = generate_city_chart(daily_df, city.name)
+        trend_df = fetch_city_climate_trend(
+            session,
+            city,
+            start_date=trend_start_date.strftime("%Y-%m-%d"),
+            end_date=trend_end_date.strftime("%Y-%m-%d"),
+        )
+        chart_paths[city.name] = generate_city_chart(trend_df, city.name)
 
     all_daily = pd.concat(daily_frames, ignore_index=True)
     all_daily = all_daily.sort_values(
