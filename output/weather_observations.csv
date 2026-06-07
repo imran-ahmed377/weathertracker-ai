@@ -1,25 +1,25 @@
 scraped_at_utc,city,timezone,temp_c,humidity_pct,precip_mm,wind_kmh,weather_code
 2026-05-27T01:59:01Z,Calgary,America/Edmonton,22.9,38,0.0,26.6,3
 2026-06-01T02:11:42Z,Calgary,America/Edmonton,5.5,83,0.1,23.5,51
-2026-06-07T13:26:35Z,Calgary,America/Edmonton,7.0,65,0.0,12.4,0
+2026-06-07T15:19:44Z,Calgary,America/Edmonton,9.9,57,0.0,15.6,0
 2026-05-27T01:59:01Z,Edmonton,America/Edmonton,26.3,37,0.0,13.3,0
 2026-06-01T02:11:42Z,Edmonton,America/Edmonton,8.1,89,0.5,25.7,61
-2026-06-07T13:26:35Z,Edmonton,America/Edmonton,8.5,83,0.0,4.4,3
+2026-06-07T15:19:44Z,Edmonton,America/Edmonton,10.5,74,0.0,8.8,3
 2026-05-27T01:59:01Z,Montreal,America/Toronto,21.5,44,0.0,24.0,0
 2026-06-01T02:11:42Z,Montreal,America/Toronto,10.4,90,0.0,7.2,1
-2026-06-07T13:26:35Z,Montreal,America/Toronto,17.5,95,1.4,10.9,63
+2026-06-07T15:19:44Z,Montreal,America/Toronto,16.3,92,0.0,19.0,3
 2026-05-27T01:59:01Z,Ottawa,America/Toronto,22.6,41,0.0,21.0,0
 2026-06-01T02:11:42Z,Ottawa,America/Toronto,14.7,53,0.0,10.8,3
-2026-06-07T13:26:35Z,Ottawa,America/Toronto,18.2,84,0.0,18.6,2
+2026-06-07T15:19:44Z,Ottawa,America/Toronto,19.6,81,0.0,20.3,2
 2026-05-27T01:59:01Z,Quebec City,America/Toronto,16.5,93,0.0,9.7,1
 2026-06-01T02:11:42Z,Quebec City,America/Toronto,9.4,83,0.0,8.7,0
-2026-06-07T13:26:35Z,Quebec City,America/Toronto,11.5,89,0.0,28.9,3
+2026-06-07T15:19:44Z,Quebec City,America/Toronto,12.6,87,0.0,27.4,2
 2026-05-27T01:59:01Z,Toronto,America/Toronto,16.8,76,0.0,12.7,3
 2026-06-01T02:11:42Z,Toronto,America/Toronto,17.1,44,0.0,11.6,0
-2026-06-07T13:26:35Z,Toronto,America/Toronto,19.1,72,0.0,14.3,1
+2026-06-07T15:19:44Z,Toronto,America/Toronto,20.0,71,0.0,14.6,3
 2026-05-27T01:59:01Z,Vancouver,America/Vancouver,15.8,67,0.0,6.3,0
 2026-06-01T02:11:42Z,Vancouver,America/Vancouver,19.1,45,0.0,22.1,0
-2026-06-07T13:26:35Z,Vancouver,America/Vancouver,10.2,90,0.0,10.0,2
+2026-06-07T15:19:44Z,Vancouver,America/Vancouver,12.1,88,0.0,6.6,2
 2026-05-27T01:59:01Z,Winnipeg,America/Winnipeg,23.5,36,0.0,16.1,0
 2026-06-01T02:11:42Z,Winnipeg,America/Winnipeg,25.6,33,0.0,14.6,0
-2026-06-07T13:26:35Z,Winnipeg,America/Winnipeg,24.4,51,0.0,26.6,3
+2026-06-07T15:19:44Z,Winnipeg,America/Winnipeg,28.1,46,0.0,24.3,3
