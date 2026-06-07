@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import html
 import os
 from dataclasses import dataclass
@@ -7,7 +8,6 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-import matplotlib.pyplot as plt
 import pandas as pd
 import requests
 from requests.adapters import HTTPAdapter
@@ -189,45 +189,124 @@ def slugify(name: str) -> str:
     return name.lower().replace(" ", "-")
 
 
-def generate_city_chart(city_daily: pd.DataFrame, city_name: str) -> str:
-    CHARTS_DIR.mkdir(parents=True, exist_ok=True)
-    chart_file = f"{slugify(city_name)}-trend.png"
-    chart_path = CHARTS_DIR / chart_file
+def _js_value(value: Any) -> Any:
+    if pd.isna(value):
+        return None
+    if isinstance(value, pd.Timestamp):
+        return value.strftime("%Y-%m-%d")
+    return value
 
-    city_daily = city_daily.sort_values("date")
-    fig, (ax_temp, ax_rain) = plt.subplots(
-        nrows=2,
-        ncols=1,
-        figsize=(12, 8),
-        sharex=True,
-        gridspec_kw={"height_ratios": [2.4, 1.3]},
-    )
 
-    ax_temp.plot(city_daily["date"], city_daily["temp_max_c"],
-                 color="#f24822", linewidth=2.2, label="Daily max")
-    ax_temp.plot(city_daily["date"], city_daily["temp_min_c"],
-                 color="#228be6", linewidth=2.2, label="Daily min")
-    ax_temp.set_ylabel("Temp (degC)")
-    ax_temp.set_title(f"{city_name} climate trend", fontsize=14, pad=10)
-    ax_temp.grid(alpha=0.25, linestyle="--")
-    ax_temp.legend(loc="upper right")
+def build_city_chart_section(city_daily: pd.DataFrame, city_name: str) -> str:
+    city_daily = city_daily.sort_values("date").copy()
+    city_daily["date_label"] = city_daily["date"].dt.strftime("%Y-%m-%d")
+    chart_id = f"{slugify(city_name)}-chart"
+    detail_id = f"{slugify(city_name)}-detail"
 
-    ax_rain.bar(city_daily["date"], city_daily["precip_mm"],
-                color="#16a34a", width=0.85)
-    ax_rain.set_ylabel("Rain (mm)")
-    ax_rain.grid(alpha=0.2, linestyle="--", axis="y")
+    point_rows: list[dict[str, Any]] = []
+    for _, row in city_daily.iterrows():
+        point_rows.append(
+            {
+                "date": _js_value(row["date_label"]),
+                "temp_max_c": _js_value(row["temp_max_c"]),
+                "temp_min_c": _js_value(row["temp_min_c"]),
+                "precip_mm": _js_value(row["precip_mm"]),
+                "wind_max_kmh": _js_value(row["wind_max_kmh"]),
+            }
+        )
 
-    fig.autofmt_xdate(rotation=35)
-    fig.tight_layout()
-    fig.savefig(chart_path, dpi=160)
-    plt.close(fig)
-    return f"charts/{chart_file}"
+    data_json = json.dumps(point_rows)
+    title_json = json.dumps(city_name)
+    chart_id_json = json.dumps(chart_id)
+    detail_id_json = json.dumps(detail_id)
+
+    return f"""
+        <section class="chart-card">
+            <div class="chart-head">
+                <h3>{html.escape(city_name)}</h3>
+                <p>Click any point to inspect that day.</p>
+            </div>
+            <div id="{chart_id}" class="interactive-chart"></div>
+            <div id="{detail_id}" class="day-details"></div>
+            <script>
+                (function() {{
+                    const chartId = {chart_id_json};
+                    const detailId = {detail_id_json};
+                    const cityName = {title_json};
+                    const rows = {data_json};
+                    const chartEl = document.getElementById(chartId);
+                    const detailEl = document.getElementById(detailId);
+
+                    function renderDetails(index) {{
+                        const row = rows[index];
+                        if (!row) {{
+                            detailEl.innerHTML = '<p>No daily data available.</p>';
+                            return;
+                        }}
+                        detailEl.innerHTML = `
+                            <div class="detail-grid">
+                                <div><span>Date</span><strong>${{row.date}}</strong></div>
+                                <div><span>Max Temp</span><strong>${{row.temp_max_c ?? 'n/a'}} °C</strong></div>
+                                <div><span>Min Temp</span><strong>${{row.temp_min_c ?? 'n/a'}} °C</strong></div>
+                                <div><span>Precipitation</span><strong>${{row.precip_mm ?? 'n/a'}} mm</strong></div>
+                                <div><span>Wind Max</span><strong>${{row.wind_max_kmh ?? 'n/a'}} km/h</strong></div>
+                            </div>
+                        `;
+                    }}
+
+                    const traces = [
+                        {{
+                            x: rows.map((row) => row.date),
+                            y: rows.map((row) => row.temp_max_c),
+                            type: 'scatter',
+                            mode: 'lines+markers',
+                            name: 'Daily max',
+                            line: {{ color: '#f24822', width: 2.2 }},
+                            marker: {{ color: '#f24822', size: 6 }},
+                            customdata: rows.map((row) => row),
+                            hovertemplate: '%{{x}}<br>Max: %{{y}} °C<extra></extra>',
+                        }},
+                        {{
+                            x: rows.map((row) => row.date),
+                            y: rows.map((row) => row.temp_min_c),
+                            type: 'scatter',
+                            mode: 'lines+markers',
+                            name: 'Daily min',
+                            line: {{ color: '#228be6', width: 2.2 }},
+                            marker: {{ color: '#228be6', size: 6 }},
+                            customdata: rows.map((row) => row),
+                            hovertemplate: '%{{x}}<br>Min: %{{y}} °C<extra></extra>',
+                        }},
+                    ];
+
+                    const layout = {{
+                        title: {{ text: `${{cityName}} climate trend - previous 1 year` }},
+                        margin: {{ l: 55, r: 20, t: 50, b: 45 }},
+                        height: 420,
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        hovermode: 'x unified',
+                        legend: {{ orientation: 'h', y: 1.12 }},
+                        xaxis: {{ title: 'Date', showgrid: true, gridcolor: 'rgba(148,163,184,0.18)' }},
+                        yaxis: {{ title: 'Temperature (°C)', showgrid: true, gridcolor: 'rgba(148,163,184,0.18)' }},
+                    }};
+
+                    Plotly.newPlot(chartEl, traces, layout, {{ responsive: true, displayModeBar: false }});
+                    chartEl.on('plotly_click', function(eventData) {{
+                        const point = eventData.points[0];
+                        renderDetails(point.pointIndex);
+                    }});
+                    renderDetails(rows.length - 1);
+                }})();
+            </script>
+        </section>
+        """
 
 
 def build_dashboard_html(
     observations: pd.DataFrame,
     daily_df: pd.DataFrame,
-    chart_paths: dict[str, str],
+    trend_frames: dict[str, pd.DataFrame],
     generated_at: str,
 ) -> str:
     latest = observations.sort_values("scraped_at_utc").groupby(
@@ -256,28 +335,14 @@ def build_dashboard_html(
         )
 
     chart_blocks: list[str] = []
-    for city, rel_path in sorted(chart_paths.items()):
-        city_rows = daily_df[daily_df["city"]
-                             == city].copy().sort_values("date")
+    for city, city_rows in sorted(trend_frames.items()):
+        city_rows = city_rows.copy().sort_values("date")
         if city_rows.empty:
             continue
         window_start = city_rows["date"].min().strftime("%Y-%m-%d")
         window_end = city_rows["date"].max().strftime("%Y-%m-%d")
         chart_blocks.append(
-            """
-            <section class="chart-card">
-              <div class="chart-head">
-                <h3>{city}</h3>
-                <p>{window_start} to {window_end}</p>
-              </div>
-              <img src="{img}" alt="{city} climate trend chart" loading="lazy" />
-            </section>
-            """.format(
-                city=html.escape(city),
-                window_start=window_start,
-                window_end=window_end,
-                img=html.escape(rel_path),
-            )
+            build_city_chart_section(city_rows, city)
         )
 
     return """
@@ -358,13 +423,39 @@ def build_dashboard_html(
     }}
     .chart-head h3 {{ margin: 0; }}
     .chart-head p {{ margin: 0; color: var(--muted); font-size: 0.9rem; }}
-    img {{ width: 100%; height: auto; border-radius: 10px; border: 1px solid #bfdbfe; }}
+        .interactive-chart {{ width: 100%; min-height: 420px; }}
+        .day-details {{
+            margin-top: 0.75rem;
+            padding: 0.85rem 0.95rem;
+            border-radius: 12px;
+            border: 1px solid #dbeafe;
+            background: linear-gradient(180deg, rgba(248,250,252,0.96), rgba(239,246,255,0.96));
+        }}
+        .detail-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.7rem;
+        }}
+        .detail-grid span {{
+            display: block;
+            font-size: 0.78rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.2rem;
+        }}
+        .detail-grid strong {{
+            display: block;
+            color: var(--ink);
+            font-size: 1rem;
+        }}
     @media (max-width: 700px) {{
       .container {{ width: min(1150px, calc(100% - 1rem)); }}
       .hero {{ padding: 0.9rem; }}
       h1 {{ font-size: 1.45rem; }}
     }}
   </style>
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 </head>
 <body>
   <main class="container">
@@ -409,7 +500,7 @@ def run() -> int:
 
     daily_frames: list[pd.DataFrame] = []
     observation_rows: list[dict[str, Any]] = []
-    chart_paths: dict[str, str] = {}
+    trend_frames: dict[str, pd.DataFrame] = {}
 
     for city in CITIES:
         daily_df, current = fetch_city_weather(
@@ -422,7 +513,7 @@ def run() -> int:
             start_date=trend_start_date.strftime("%Y-%m-%d"),
             end_date=trend_end_date.strftime("%Y-%m-%d"),
         )
-        chart_paths[city.name] = generate_city_chart(trend_df, city.name)
+        trend_frames[city.name] = trend_df
 
     all_daily = pd.concat(daily_frames, ignore_index=True)
     all_daily = all_daily.sort_values(
@@ -437,7 +528,7 @@ def run() -> int:
     all_observations = append_observations(observations)
 
     dashboard = build_dashboard_html(
-        all_observations, all_daily, chart_paths, run_ts)
+        all_observations, all_daily, trend_frames, run_ts)
     DASHBOARD_HTML.write_text(dashboard, encoding="utf-8")
 
     print(f"Wrote {len(all_daily_to_write)} daily weather rows to {DAILY_CSV}.")

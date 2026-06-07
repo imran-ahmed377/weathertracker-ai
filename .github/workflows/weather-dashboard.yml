@@ -83,7 +83,6 @@ jobs:
             output/weather_daily.csv
             output/weather_observations.csv
             docs/index.html
-            docs/charts
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
