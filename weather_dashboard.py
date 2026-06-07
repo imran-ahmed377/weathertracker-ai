@@ -117,7 +117,7 @@ def fetch_city_climate_trend(
         "timezone": city.timezone,
         "start_date": start_date,
         "end_date": end_date,
-        "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max",
+        "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum,rain_sum,snowfall_sum,wind_speed_10m_max",
     }
     response = session.get(HISTORICAL_API, params=params, timeout=30)
     response.raise_for_status()
@@ -134,6 +134,8 @@ def fetch_city_climate_trend(
             "temp_max_c": daily.get("temperature_2m_max", []),
             "temp_min_c": daily.get("temperature_2m_min", []),
             "precip_mm": daily.get("precipitation_sum", []),
+            "rain_mm": daily.get("rain_sum", []),
+            "snowfall_cm": daily.get("snowfall_sum", []),
             "wind_max_kmh": daily.get("wind_speed_10m_max", []),
         }
     )
@@ -201,7 +203,10 @@ def build_city_chart_section(city_daily: pd.DataFrame, city_name: str) -> str:
     city_daily = city_daily.sort_values("date").copy()
     city_daily["date_label"] = city_daily["date"].dt.strftime("%Y-%m-%d")
     chart_id = f"{slugify(city_name)}-chart"
+    precip_chart_id = f"{slugify(city_name)}-precip-chart"
     detail_id = f"{slugify(city_name)}-detail"
+    rain_id = f"{slugify(city_name)}-rain"
+    snowfall_id = f"{slugify(city_name)}-snowfall"
 
     point_rows: list[dict[str, Any]] = []
     for _, row in city_daily.iterrows():
@@ -211,6 +216,8 @@ def build_city_chart_section(city_daily: pd.DataFrame, city_name: str) -> str:
                 "temp_max_c": _js_value(row["temp_max_c"]),
                 "temp_min_c": _js_value(row["temp_min_c"]),
                 "precip_mm": _js_value(row["precip_mm"]),
+                "rain_mm": _js_value(row["rain_mm"]),
+                "snowfall_cm": _js_value(row["snowfall_cm"]),
                 "wind_max_kmh": _js_value(row["wind_max_kmh"]),
             }
         )
@@ -218,6 +225,7 @@ def build_city_chart_section(city_daily: pd.DataFrame, city_name: str) -> str:
     data_json = json.dumps(point_rows)
     title_json = json.dumps(city_name)
     chart_id_json = json.dumps(chart_id)
+    precip_chart_id_json = json.dumps(precip_chart_id)
     detail_id_json = json.dumps(detail_id)
 
     return f"""
@@ -227,22 +235,56 @@ def build_city_chart_section(city_daily: pd.DataFrame, city_name: str) -> str:
                 <p>Click any point to inspect that day.</p>
             </div>
             <div id="{chart_id}" class="interactive-chart"></div>
+            <div class="chart-head chart-head-secondary">
+                <h3>Rain and snowfall</h3>
+                <p>Separate trace view with the same click details.</p>
+            </div>
+            <div id="{precip_chart_id}" class="interactive-chart"></div>
             <div id="{detail_id}" class="day-details"></div>
+            <div class="metric-panels">
+                <div class="metric-panel">
+                    <span>Rain</span>
+                    <strong id="{rain_id}" class="metric-value">n/a</strong>
+                    <p class="metric-note">Daily rain accumulation for the selected day.</p>
+                </div>
+                <div class="metric-panel">
+                    <span>Snowfall</span>
+                    <strong id="{snowfall_id}" class="metric-value">n/a</strong>
+                    <p class="metric-note">Daily snowfall accumulation for the selected day.</p>
+                </div>
+            </div>
             <script>
                 (function() {{
                     const chartId = {chart_id_json};
+                    const precipChartId = {precip_chart_id_json};
                     const detailId = {detail_id_json};
+                    const rainId = {json.dumps(rain_id)};
+                    const snowfallId = {json.dumps(snowfall_id)};
                     const cityName = {title_json};
                     const rows = {data_json};
                     const chartEl = document.getElementById(chartId);
+                    const precipChartEl = document.getElementById(precipChartId);
                     const detailEl = document.getElementById(detailId);
+                    const rainEl = document.getElementById(rainId);
+                    const snowfallEl = document.getElementById(snowfallId);
+
+                    function formatValue(value, unit) {{
+                        if (value === null || value === undefined || Number.isNaN(value)) {{
+                            return 'n/a';
+                        }}
+                        return `${{value}} ${{unit}}`;
+                    }}
 
                     function renderDetails(index) {{
                         const row = rows[index];
                         if (!row) {{
                             detailEl.innerHTML = '<p>No daily data available.</p>';
+                            rainEl.textContent = 'n/a';
+                            snowfallEl.textContent = 'n/a';
                             return;
                         }}
+                        rainEl.textContent = formatValue(row.rain_mm, 'mm');
+                        snowfallEl.textContent = formatValue(row.snowfall_cm, 'cm');
                         detailEl.innerHTML = `
                             <div class="detail-grid">
                                 <div><span>Date</span><strong>${{row.date}}</strong></div>
@@ -252,6 +294,13 @@ def build_city_chart_section(city_daily: pd.DataFrame, city_name: str) -> str:
                                 <div><span>Wind Max</span><strong>${{row.wind_max_kmh ?? 'n/a'}} km/h</strong></div>
                             </div>
                         `;
+                    }}
+
+                    function bindPointClicks(chartElement) {{
+                        chartElement.on('plotly_click', function(eventData) {{
+                            const point = eventData.points[0];
+                            renderDetails(point.pointIndex);
+                        }});
                     }}
 
                     const traces = [
@@ -279,6 +328,32 @@ def build_city_chart_section(city_daily: pd.DataFrame, city_name: str) -> str:
                         }},
                     ];
 
+                    const precipTraces = [
+                        {{
+                            x: rows.map((row) => row.date),
+                            y: rows.map((row) => row.rain_mm),
+                            type: 'scatter',
+                            mode: 'lines+markers',
+                            name: 'Rain',
+                            line: {{ color: '#16a34a', width: 2.2 }},
+                            marker: {{ color: '#16a34a', size: 6 }},
+                            customdata: rows.map((row) => row),
+                            hovertemplate: '%{{x}}<br>Rain: %{{y}} mm<extra></extra>',
+                        }},
+                        {{
+                            x: rows.map((row) => row.date),
+                            y: rows.map((row) => row.snowfall_cm),
+                            type: 'scatter',
+                            mode: 'lines+markers',
+                            name: 'Snowfall',
+                            line: {{ color: '#60a5fa', width: 2.2, dash: 'dot' }},
+                            marker: {{ color: '#60a5fa', size: 6 }},
+                            customdata: rows.map((row) => row),
+                            hovertemplate: '%{{x}}<br>Snowfall: %{{y}} cm<extra></extra>',
+                            yaxis: 'y2',
+                        }},
+                    ];
+
                     const layout = {{
                         title: {{ text: `${{cityName}} climate trend - previous 1 year` }},
                         margin: {{ l: 55, r: 20, t: 50, b: 45 }},
@@ -291,11 +366,28 @@ def build_city_chart_section(city_daily: pd.DataFrame, city_name: str) -> str:
                         yaxis: {{ title: 'Temperature (°C)', showgrid: true, gridcolor: 'rgba(148,163,184,0.18)' }},
                     }};
 
-                    Plotly.newPlot(chartEl, traces, layout, {{ responsive: true, displayModeBar: false }});
-                    chartEl.on('plotly_click', function(eventData) {{
-                        const point = eventData.points[0];
-                        renderDetails(point.pointIndex);
-                    }});
+                    const precipLayout = {{
+                        title: {{ text: `${{cityName}} rain and snowfall - previous 1 year` }},
+                        margin: {{ l: 55, r: 55, t: 50, b: 45 }},
+                        height: 380,
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        hovermode: 'x unified',
+                        legend: {{ orientation: 'h', y: 1.12 }},
+                        xaxis: {{ title: 'Date', showgrid: true, gridcolor: 'rgba(148,163,184,0.18)' }},
+                        yaxis: {{ title: 'Rain (mm)', showgrid: true, gridcolor: 'rgba(148,163,184,0.18)' }},
+                        yaxis2: {{
+                            title: 'Snowfall (cm)',
+                            overlaying: 'y',
+                            side: 'right',
+                            showgrid: false,
+                        }},
+                    }};
+
+                    Plotly.newPlot(chartEl, traces, layout, {{ responsive: true, displayModeBar: true, displaylogo: false }});
+                    Plotly.newPlot(precipChartEl, precipTraces, precipLayout, {{ responsive: true, displayModeBar: true, displaylogo: false }});
+                    bindPointClicks(chartEl);
+                    bindPointClicks(precipChartEl);
                     renderDetails(rows.length - 1);
                 }})();
             </script>
@@ -431,6 +523,37 @@ def build_dashboard_html(
             border: 1px solid #dbeafe;
             background: linear-gradient(180deg, rgba(248,250,252,0.96), rgba(239,246,255,0.96));
         }}
+            .metric-panels {{
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 0.75rem;
+                margin-top: 0.75rem;
+            }}
+            .metric-panel {{
+                border: 1px solid #dbeafe;
+                border-radius: 12px;
+                padding: 0.85rem 0.95rem;
+                background: rgba(255, 255, 255, 0.84);
+            }}
+            .metric-panel span {{
+                display: block;
+                font-size: 0.78rem;
+                color: var(--muted);
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                margin-bottom: 0.2rem;
+            }}
+            .metric-value {{
+                display: block;
+                font-size: 1.15rem;
+                font-weight: 700;
+                color: var(--ink);
+            }}
+            .metric-note {{
+                margin: 0.25rem 0 0;
+                color: var(--muted);
+                font-size: 0.86rem;
+            }}
         .detail-grid {{
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
