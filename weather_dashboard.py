@@ -202,6 +202,7 @@ def _js_value(value: Any) -> Any:
 def build_city_chart_section(city_daily: pd.DataFrame, city_name: str) -> str:
     city_daily = city_daily.sort_values("date").copy()
     city_daily["date_label"] = city_daily["date"].dt.strftime("%Y-%m-%d")
+    section_id = f"{slugify(city_name)}-section"
     chart_id = f"{slugify(city_name)}-chart"
     precip_chart_id = f"{slugify(city_name)}-precip-chart"
     detail_id = f"{slugify(city_name)}-detail"
@@ -229,7 +230,7 @@ def build_city_chart_section(city_daily: pd.DataFrame, city_name: str) -> str:
     detail_id_json = json.dumps(detail_id)
 
     return f"""
-        <section class="chart-card">
+        <section id="{section_id}" class="chart-card" tabindex="-1">
             <div class="chart-head">
                 <h3>{html.escape(city_name)}</h3>
                 <p>Click any point to inspect that day.</p>
@@ -407,16 +408,18 @@ def build_dashboard_html(
 
     cards: list[str] = []
     for _, row in latest.iterrows():
+        city_slug = slugify(str(row["city"]))
         cards.append(
             """
-            <article class="card">
+            <a class="card card-link" href="#{city_slug}-section">
               <h3>{city}</h3>
               <p class="temp">{temp} degC</p>
               <p>Humidity: {humidity}% | Wind: {wind} km/h</p>
               <p>Rain now: {rain} mm</p>
               <p class="meta">Last update: {updated}</p>
-            </article>
+            </a>
             """.format(
+                city_slug=city_slug,
                 city=html.escape(str(row["city"])),
                 temp=row.get("temp_c", "n/a"),
                 humidity=row.get("humidity_pct", "n/a"),
@@ -491,6 +494,19 @@ def build_dashboard_html(
       padding: 0.9rem;
       box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
     }}
+        .card-link {{
+            display: block;
+            color: inherit;
+            text-decoration: none;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+            cursor: pointer;
+        }}
+        .card-link:hover, .card-link:focus-visible {{
+            transform: translateY(-2px);
+            border-color: #93c5fd;
+            box-shadow: 0 14px 34px rgba(15, 23, 42, 0.12);
+            outline: none;
+        }}
     .card h3 {{ margin: 0 0 0.2rem; }}
     .temp {{ margin: 0.2rem 0 0.4rem; font-size: 1.5rem; font-weight: 700; color: var(--accent); }}
     .meta {{ color: #475569; font-size: 0.9rem; }}

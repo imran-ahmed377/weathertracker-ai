@@ -52,6 +52,19 @@
       padding: 0.9rem;
       box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
     }
+        .card-link {
+            display: block;
+            color: inherit;
+            text-decoration: none;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+            cursor: pointer;
+        }
+        .card-link:hover, .card-link:focus-visible {
+            transform: translateY(-2px);
+            border-color: #93c5fd;
+            box-shadow: 0 14px 34px rgba(15, 23, 42, 0.12);
+            outline: none;
+        }
     .card h3 { margin: 0 0 0.2rem; }
     .temp { margin: 0.2rem 0 0.4rem; font-size: 1.5rem; font-weight: 700; color: var(--accent); }
     .meta { color: #475569; font-size: 0.9rem; }
@@ -146,87 +159,87 @@
     <section class="hero">
       <h1>Weather and Environment Dashboard</h1>
       <p>Daily refresh powered by Open-Meteo. Includes recent climate trends and short-range forecast.</p>
-      <p>Generated at: 2026-06-07T17:34:44Z</p>
+      <p>Generated at: 2026-06-07T17:43:52Z</p>
     </section>
 
     <section class="grid">
       
-            <article class="card">
+            <a class="card card-link" href="#calgary-section">
               <h3>Calgary</h3>
               <p class="temp">12.6 degC</p>
-              <p>Humidity: 56% | Wind: 8.4 km/h</p>
+              <p>Humidity: 50% | Wind: 7.6 km/h</p>
               <p>Rain now: 0.0 mm</p>
-              <p class="meta">Last update: 2026-06-07T17:34:44Z</p>
-            </article>
+              <p class="meta">Last update: 2026-06-07T17:43:52Z</p>
+            </a>
             
 
-            <article class="card">
+            <a class="card card-link" href="#edmonton-section">
               <h3>Edmonton</h3>
               <p class="temp">13.0 degC</p>
               <p>Humidity: 65% | Wind: 8.0 km/h</p>
               <p>Rain now: 0.0 mm</p>
-              <p class="meta">Last update: 2026-06-07T17:34:44Z</p>
-            </article>
+              <p class="meta">Last update: 2026-06-07T17:43:52Z</p>
+            </a>
             
 
-            <article class="card">
+            <a class="card card-link" href="#montreal-section">
               <h3>Montreal</h3>
               <p class="temp">14.9 degC</p>
-              <p>Humidity: 90% | Wind: 17.0 km/h</p>
+              <p>Humidity: 92% | Wind: 18.3 km/h</p>
               <p>Rain now: 0.0 mm</p>
-              <p class="meta">Last update: 2026-06-07T17:34:44Z</p>
-            </article>
+              <p class="meta">Last update: 2026-06-07T17:43:52Z</p>
+            </a>
             
 
-            <article class="card">
+            <a class="card card-link" href="#ottawa-section">
               <h3>Ottawa</h3>
               <p class="temp">18.7 degC</p>
-              <p>Humidity: 79% | Wind: 17.7 km/h</p>
+              <p>Humidity: 80% | Wind: 18.1 km/h</p>
               <p>Rain now: 0.0 mm</p>
-              <p class="meta">Last update: 2026-06-07T17:34:44Z</p>
-            </article>
+              <p class="meta">Last update: 2026-06-07T17:43:52Z</p>
+            </a>
             
 
-            <article class="card">
+            <a class="card card-link" href="#quebec-city-section">
               <h3>Quebec City</h3>
               <p class="temp">13.9 degC</p>
-              <p>Humidity: 84% | Wind: 26.0 km/h</p>
+              <p>Humidity: 84% | Wind: 25.8 km/h</p>
               <p>Rain now: 0.0 mm</p>
-              <p class="meta">Last update: 2026-06-07T17:34:44Z</p>
-            </article>
+              <p class="meta">Last update: 2026-06-07T17:43:52Z</p>
+            </a>
             
 
-            <article class="card">
+            <a class="card card-link" href="#toronto-section">
               <h3>Toronto</h3>
               <p class="temp">22.3 degC</p>
-              <p>Humidity: 61% | Wind: 10.5 km/h</p>
+              <p>Humidity: 61% | Wind: 9.5 km/h</p>
               <p>Rain now: 0.0 mm</p>
-              <p class="meta">Last update: 2026-06-07T17:34:44Z</p>
-            </article>
+              <p class="meta">Last update: 2026-06-07T17:43:52Z</p>
+            </a>
             
 
-            <article class="card">
+            <a class="card card-link" href="#vancouver-section">
               <h3>Vancouver</h3>
               <p class="temp">12.2 degC</p>
-              <p>Humidity: 90% | Wind: 9.9 km/h</p>
+              <p>Humidity: 88% | Wind: 9.7 km/h</p>
               <p>Rain now: 0.0 mm</p>
-              <p class="meta">Last update: 2026-06-07T17:34:44Z</p>
-            </article>
+              <p class="meta">Last update: 2026-06-07T17:43:52Z</p>
+            </a>
             
 
-            <article class="card">
+            <a class="card card-link" href="#winnipeg-section">
               <h3>Winnipeg</h3>
               <p class="temp">30.3 degC</p>
-              <p>Humidity: 47% | Wind: 26.6 km/h</p>
+              <p>Humidity: 46% | Wind: 26.6 km/h</p>
               <p>Rain now: 0.0 mm</p>
-              <p class="meta">Last update: 2026-06-07T17:34:44Z</p>
-            </article>
+              <p class="meta">Last update: 2026-06-07T17:43:52Z</p>
+            </a>
             
     </section>
 
     <section class="charts">
       
-        <section class="chart-card">
+        <section id="calgary-section" class="chart-card" tabindex="-1">
             <div class="chart-head">
                 <h3>Calgary</h3>
                 <p>Click any point to inspect that day.</p>
@@ -391,7 +404,7 @@
         </section>
         
 
-        <section class="chart-card">
+        <section id="edmonton-section" class="chart-card" tabindex="-1">
             <div class="chart-head">
                 <h3>Edmonton</h3>
                 <p>Click any point to inspect that day.</p>
@@ -556,7 +569,7 @@
         </section>
         
 
-        <section class="chart-card">
+        <section id="montreal-section" class="chart-card" tabindex="-1">
             <div class="chart-head">
                 <h3>Montreal</h3>
                 <p>Click any point to inspect that day.</p>
@@ -721,7 +734,7 @@
         </section>
         
 
-        <section class="chart-card">
+        <section id="ottawa-section" class="chart-card" tabindex="-1">
             <div class="chart-head">
                 <h3>Ottawa</h3>
                 <p>Click any point to inspect that day.</p>
@@ -886,7 +899,7 @@
         </section>
         
 
-        <section class="chart-card">
+        <section id="quebec-city-section" class="chart-card" tabindex="-1">
             <div class="chart-head">
                 <h3>Quebec City</h3>
                 <p>Click any point to inspect that day.</p>
@@ -1051,7 +1064,7 @@
         </section>
         
 
-        <section class="chart-card">
+        <section id="toronto-section" class="chart-card" tabindex="-1">
             <div class="chart-head">
                 <h3>Toronto</h3>
                 <p>Click any point to inspect that day.</p>
@@ -1216,7 +1229,7 @@
         </section>
         
 
-        <section class="chart-card">
+        <section id="vancouver-section" class="chart-card" tabindex="-1">
             <div class="chart-head">
                 <h3>Vancouver</h3>
                 <p>Click any point to inspect that day.</p>
@@ -1381,7 +1394,7 @@
         </section>
         
 
-        <section class="chart-card">
+        <section id="winnipeg-section" class="chart-card" tabindex="-1">
             <div class="chart-head">
                 <h3>Winnipeg</h3>
                 <p>Click any point to inspect that day.</p>
