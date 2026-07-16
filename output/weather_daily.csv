@@ -29,9 +29,9 @@ date,temp_max_c,temp_min_c,precip_mm,wind_max_kmh,city,timezone
 2026-07-13,26.7,14.4,0.0,20.2,Calgary,America/Edmonton
 2026-07-14,23.7,12.6,0.0,17.2,Calgary,America/Edmonton
 2026-07-15,27.1,14.0,0.0,15.9,Calgary,America/Edmonton
-2026-07-16,29.3,14.2,0.0,13.5,Calgary,America/Edmonton
-2026-07-17,31.9,17.4,0.0,19.5,Calgary,America/Edmonton
-2026-07-18,31.5,17.2,0.0,22.7,Calgary,America/Edmonton
+2026-07-16,30.2,14.2,0.0,13.8,Calgary,America/Edmonton
+2026-07-17,31.6,17.2,0.0,19.0,Calgary,America/Edmonton
+2026-07-18,31.5,18.7,0.0,22.7,Calgary,America/Edmonton
 2026-07-19,23.8,12.7,3.0,27.1,Calgary,America/Edmonton
 2026-07-20,21.8,11.5,0.1,15.3,Calgary,America/Edmonton
 2026-07-21,29.1,12.4,0.0,14.5,Calgary,America/Edmonton
@@ -103,7 +103,7 @@ date,temp_max_c,temp_min_c,precip_mm,wind_max_kmh,city,timezone
 2026-07-13,28.0,17.7,0.0,18.9,Montreal,America/Toronto
 2026-07-14,30.2,20.6,0.6,21.0,Montreal,America/Toronto
 2026-07-15,27.5,20.5,0.0,20.2,Montreal,America/Toronto
-2026-07-16,24.1,16.4,0.3,31.8,Montreal,America/Toronto
+2026-07-16,24.6,16.4,0.0,43.6,Montreal,America/Toronto
 2026-07-17,26.4,12.4,0.0,16.3,Montreal,America/Toronto
 2026-07-18,19.4,15.3,24.9,17.6,Montreal,America/Toronto
 2026-07-19,23.6,14.8,9.1,16.5,Montreal,America/Toronto
@@ -140,9 +140,9 @@ date,temp_max_c,temp_min_c,precip_mm,wind_max_kmh,city,timezone
 2026-07-13,31.0,17.3,0.0,20.3,Ottawa,America/Toronto
 2026-07-14,33.0,21.7,0.0,17.3,Ottawa,America/Toronto
 2026-07-15,28.3,20.0,2.2,21.3,Ottawa,America/Toronto
-2026-07-16,25.8,16.6,0.0,29.8,Ottawa,America/Toronto
-2026-07-17,25.1,12.0,0.0,14.7,Ottawa,America/Toronto
-2026-07-18,21.4,14.1,54.1,15.0,Ottawa,America/Toronto
+2026-07-16,25.5,16.7,0.0,30.3,Ottawa,America/Toronto
+2026-07-17,25.0,12.3,0.0,15.3,Ottawa,America/Toronto
+2026-07-18,21.4,14.9,53.45,15.0,Ottawa,America/Toronto
 2026-07-19,22.8,13.8,0.0,21.4,Ottawa,America/Toronto
 2026-07-20,25.3,11.3,0.0,18.7,Ottawa,America/Toronto
 2026-07-21,22.5,15.0,6.0,21.9,Ottawa,America/Toronto
@@ -177,9 +177,9 @@ date,temp_max_c,temp_min_c,precip_mm,wind_max_kmh,city,timezone
 2026-07-13,27.0,15.9,3.4,17.7,Quebec City,America/Toronto
 2026-07-14,23.3,17.1,10.3,15.9,Quebec City,America/Toronto
 2026-07-15,26.4,16.1,0.0,21.6,Quebec City,America/Toronto
-2026-07-16,19.0,12.8,3.1,27.9,Quebec City,America/Toronto
-2026-07-17,23.7,10.8,0.0,27.4,Quebec City,America/Toronto
-2026-07-18,22.4,15.2,14.7,19.0,Quebec City,America/Toronto
+2026-07-16,18.6,12.8,1.2,27.8,Quebec City,America/Toronto
+2026-07-17,23.7,10.2,0.0,23.9,Quebec City,America/Toronto
+2026-07-18,22.4,12.8,14.7,19.0,Quebec City,America/Toronto
 2026-07-19,21.6,13.3,1.9,19.5,Quebec City,America/Toronto
 2026-07-20,21.4,9.6,0.0,17.4,Quebec City,America/Toronto
 2026-07-21,21.3,13.7,41.7,14.6,Quebec City,America/Toronto
@@ -214,9 +214,9 @@ date,temp_max_c,temp_min_c,precip_mm,wind_max_kmh,city,timezone
 2026-07-13,29.9,15.9,0.0,24.2,Toronto,America/Toronto
 2026-07-14,38.3,21.7,0.0,22.8,Toronto,America/Toronto
 2026-07-15,27.0,22.7,0.0,13.6,Toronto,America/Toronto
-2026-07-16,27.2,19.2,0.0,16.6,Toronto,America/Toronto
-2026-07-17,24.7,16.3,0.0,12.0,Toronto,America/Toronto
-2026-07-18,30.1,20.5,22.4,36.0,Toronto,America/Toronto
+2026-07-16,28.3,19.2,0.0,18.4,Toronto,America/Toronto
+2026-07-17,24.1,17.0,0.0,15.1,Toronto,America/Toronto
+2026-07-18,30.1,17.4,22.33,36.0,Toronto,America/Toronto
 2026-07-19,23.7,16.8,0.0,23.3,Toronto,America/Toronto
 2026-07-20,25.0,15.8,0.0,19.1,Toronto,America/Toronto
 2026-07-21,23.8,16.7,3.3,28.3,Toronto,America/Toronto
@@ -251,8 +251,8 @@ date,temp_max_c,temp_min_c,precip_mm,wind_max_kmh,city,timezone
 2026-07-13,21.9,11.5,0.0,14.3,Vancouver,America/Vancouver
 2026-07-14,25.1,13.8,0.0,11.4,Vancouver,America/Vancouver
 2026-07-15,25.9,14.1,0.0,13.2,Vancouver,America/Vancouver
-2026-07-16,25.0,14.9,0.1,11.1,Vancouver,America/Vancouver
-2026-07-17,23.2,15.6,0.0,15.5,Vancouver,America/Vancouver
+2026-07-16,25.5,14.8,0.1,12.8,Vancouver,America/Vancouver
+2026-07-17,23.2,15.0,0.0,15.6,Vancouver,America/Vancouver
 2026-07-18,20.8,13.8,0.0,12.7,Vancouver,America/Vancouver
 2026-07-19,22.6,15.0,0.0,13.0,Vancouver,America/Vancouver
 2026-07-20,25.1,15.7,0.0,12.1,Vancouver,America/Vancouver
@@ -288,9 +288,9 @@ date,temp_max_c,temp_min_c,precip_mm,wind_max_kmh,city,timezone
 2026-07-13,34.7,25.3,0.0,22.5,Winnipeg,America/Winnipeg
 2026-07-14,28.5,19.0,0.0,11.2,Winnipeg,America/Winnipeg
 2026-07-15,23.7,20.1,0.5,13.8,Winnipeg,America/Winnipeg
-2026-07-16,22.0,18.9,15.9,17.2,Winnipeg,America/Winnipeg
-2026-07-17,25.8,19.1,4.7,15.9,Winnipeg,America/Winnipeg
-2026-07-18,29.2,17.1,0.0,14.9,Winnipeg,America/Winnipeg
+2026-07-16,21.3,18.3,18.9,21.9,Winnipeg,America/Winnipeg
+2026-07-17,27.5,18.5,13.58,20.0,Winnipeg,America/Winnipeg
+2026-07-18,29.2,16.9,0.0,14.9,Winnipeg,America/Winnipeg
 2026-07-19,33.7,17.7,0.0,25.6,Winnipeg,America/Winnipeg
 2026-07-20,26.0,12.7,0.4,30.1,Winnipeg,America/Winnipeg
 2026-07-21,25.9,9.9,0.0,17.5,Winnipeg,America/Winnipeg
